@@ -1170,6 +1170,7 @@ TASK_SUITE_CONFIGS["olmo3:adapt"] = {
         # Chat / IF
         "alpaca_eval_v3::olmo3:adapt",
         "ifeval::olmo3:adapt",
+        "ifbench::olmo3:adapt",
     ]
 }
 
