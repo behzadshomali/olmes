@@ -788,6 +788,17 @@ TASK_CONFIGS.update(
             "num_shots": 8,
             "fewshot_source": "STD:GSM8k",
         },
+        "gsm_symbolic::modalitites": {
+            "task_name": "gsm_symbolic",
+            "split": "test",
+            "primary_metric": "exact_match",
+            "num_shots": 8,
+            "fewshot_source": "STD:GSM8k",
+            "generation_kwargs": {
+                "max_gen_toks": 1024,
+                "do_sample": False,
+            },
+        },
         "gsm_symbolic::olmo3": {
             "task_name": "gsm_symbolic",
             "split": "test",
@@ -3000,25 +3011,6 @@ TASK_CONFIGS.update(
             },
             "metadata": {
                 "regimes": ["OLMES-v0.2"],
-            },
-        },
-        "minerva_math_500::olmo3:n32": {
-            "task_name": "minerva_math_500",
-            "primary_metric": "pass_at_1",
-            "split": "test",
-            "num_shots": 4,
-            "fewshot_source": "Minerva:MATH:fixed",
-            "generation_kwargs": {
-                "max_gen_toks": 1024,
-                "temperature": 1,
-                "top_p": 1,
-                "do_sample": True,
-                "stop_sequences": ["Problem:", "\n\n"],
-                "repeats": 32,
-            },
-            "metric_kwargs": {
-                "pass_at_ks": [1, 2, 4, 8, 16],
-                "maj_at_ks": [1, 4, 8, 16, 32],
             },
         },
         "minerva_math_500::olmo3:n32:v2": {
@@ -7829,3 +7821,200 @@ for task_alias in list(TASK_CONFIGS.keys()):
 
     BPB_ONLY_CONFIGS[bpb_only_alias] = new_config
 TASK_CONFIGS.update(BPB_ONLY_CONFIGS)
+
+# Add Modalities BPB tasks (with max_gen_toks)
+MODALITIES_BPB_CONFIGS: dict = {}
+KEYS_TO_MODALIZE = [
+    "arc_easy", "arc_challenge", "mmlu", "csqa", "hellaswag", "winogrande",
+    "socialiqa", "piqa", "coqa", "drop", "jeopardy", "naturalqs", "squad",
+    "sciq", "qasper_yesno", "basic_skills", "lab_bench", "lambada",
+    "medmcqa", "medqa_en", "sciriff_yesno"
+]
+
+for task_alias, task_config in TASK_CONFIGS.items():
+    if ":bpb" not in task_alias:
+        continue
+        
+    # Check if task matches one of our target types
+    is_target = any(key in task_alias for key in KEYS_TO_MODALIZE)
+    if not is_target:
+        continue
+    
+    # Avoid if already modalities or has modalities in name
+    if "modalities" in task_alias and task_alias.endswith("modalities"):
+        continue
+
+    new_config = copy.deepcopy(task_config)
+    # Add generation_kwargs with explicit max_gen_toks
+    # new_config["generation_kwargs"] = {
+    #     "max_gen_toks": 768,
+    # }
+    new_config["limit"] = 100 # limit to 100 samples for faster eval
+    
+    if "::" in task_alias:
+        # Example: arc_easy:rc:bpb::olmes:full -> arc_easy:rc:bpb::olmes:full:modalities
+        new_alias = task_alias + ":modalities"
+    else:
+        # Example: lambada:bpb -> lambada:bpb:modalities
+        new_alias = task_alias + ":modalities"
+
+    MODALITIES_BPB_CONFIGS[new_alias] = new_config
+
+
+MODALITIES_BPB_CONFIGS["gsm_symbolic::modalities"] = {
+    "task_name": "gsm_symbolic",
+    "split": "test",
+    "primary_metric": "exact_match",
+    "num_shots": 8,
+    "fewshot_source": "STD:GSM8k",
+    "limit": 100,
+    "generation_kwargs": {
+        "max_gen_toks": 768,
+        # "temperature": 0.2,
+        "do_sample": False,
+        "stop_sequences": ["Question:", "</s>", "<|im_end|>", "\n\n"],
+    },
+}
+MODALITIES_BPB_CONFIGS["gsm_symbolic:bpb::modalities"] = {
+    "task_name": "gsm_symbolic",
+    "split": "test",
+    "primary_metric": "bits_per_byte_corr",
+    "num_shots": 8,
+    "fewshot_source": "STD:GSM8k",
+    "limit": 100,
+    "generation_kwargs": {
+        "max_gen_toks": 768,
+        # "temperature": 0.2,
+        "do_sample": False,
+        "stop_sequences": ["Question:", "</s>", "<|im_end|>", "\n\n"],
+    },
+    "compute_gold_bpb": True,
+}
+MODALITIES_BPB_CONFIGS["mbpp:3shot:bpb::modalities"] = {
+    "task_name": "mbpp",
+    "primary_metric": "bits_per_byte_corr",
+    "use_chat_format": False,
+    "context_kwargs": {
+        "prompt_variant": "inloop_bpb",
+    },
+    "generation_kwargs": {
+        # "max_gen_toks": 768,
+        "stop_sequences": [],
+    },
+    "compute_gold_bpb": True,
+    "num_shots": 3,  # like deepseek
+    "limit": 100,
+}
+MODALITIES_BPB_CONFIGS["gsm8k:8shot:bpb::modalities"] = {
+    "task_name": "gsm8k",
+    "split": "test",
+    "primary_metric": "bits_per_byte_corr",
+    "num_shots": 8,
+    "fewshot_source": "STD:GSM8k",
+    "random_subsample_seed": 42,
+    "limit": 100,
+    "metadata": {
+        "regimes": ["OLMo-v1"],
+    },
+    "compute_gold_bpb": True,
+}
+MODALITIES_BPB_CONFIGS["gsm8k:8shot:em::modalities"] = {
+    "task_name": "gsm8k",
+    "split": "test",
+    "primary_metric": "exact_match",
+    "num_shots": 8,
+    "fewshot_source": "STD:GSM8k",
+    "random_subsample_seed": 42,
+    "limit": 100,
+    "metadata": {
+        "regimes": ["OLMo-v1"],
+    },
+}
+MODALITIES_BPB_CONFIGS["minerva_math_500:bpb::modalities"] = {
+    "task_name": "minerva_math_500",
+    "primary_metric": "bits_per_byte_corr",
+    "split": "test",
+    "num_shots": 4,
+    "fewshot_source": "Minerva:MATH:fixed",
+    "limit": 100,
+    "generation_kwargs": {
+        "max_gen_toks": 768,
+        "temperature": 0.0,
+        "do_sample": True,
+        "stop_sequences": ["Problem:", "\n\n"],
+    },
+    "compute_gold_bpb": True,
+    "metadata": {
+        "regimes": ["OLMES-v0.2"],
+    },
+    "compute_gold_bpb": True,
+}
+
+MODALITIES_BPB_CONFIGS["codex_humaneval:3shot:bpb::modalities"] = {
+    "task_name": "codex_humaneval",
+    "primary_metric": "bits_per_byte_corr",
+    "use_chat_format": False,
+    "context_kwargs": {
+        "prompt_variant": "inloop_bpb",
+        "answer_prefix": "",
+    },
+    "generation_kwargs": {
+        # "max_gen_toks": 768,
+        "stop_sequences": [],
+    },
+    "chat_overrides": {
+        "context_kwargs": {
+            "assistant_prefix": "",
+        },
+    },
+    "compute_gold_bpb": True,
+    "num_shots": 3,  # like deepseek
+    "limit": 100,
+}
+for language in MULTILINGUAL_MBPP_LANGUAGES:
+    MODALITIES_BPB_CONFIGS[f"mt_mbpp_v2fix:{language}:modalities"] = {
+        "task_name": f"mt_mbpp_v2fix:{language}",
+        "dataset_name": language,
+        "split": "test",
+        "compute_gold_bpb": True,
+        "primary_metric": "bits_per_byte_corr",
+        "num_shots": 3,  # like deepseek
+        "limit": 100,
+        # "generation_kwargs": {
+        #     "max_gen_toks": 768,
+        # },
+        "compute_gold_bpb": True,
+    }
+
+TASK_CONFIGS.update(MODALITIES_BPB_CONFIGS)
+
+# Add Modalities RC tasks (with max_gen_toks)
+MODALITIES_RC_CONFIGS: dict = {}
+for task_alias, task_config in TASK_CONFIGS.items():
+    # Skip if BPB (handled above)
+    if ":bpb" in task_alias:
+        continue
+        
+    # Check if task matches one of our target types
+    is_target = any(key in task_alias for key in KEYS_TO_MODALIZE)
+    if not is_target:
+        continue
+    
+    # Avoid if already modalities or has modalities in name
+    if "modalities" in task_alias and task_alias.endswith("modalities"):
+        continue
+
+    new_config = copy.deepcopy(task_config)
+    # Add generation_kwargs with explicit max_gen_toks
+    # new_config["generation_kwargs"] = {
+    #     "max_gen_toks": 768,
+    # }
+    
+    new_config["limit"] = 100 # limit to 100 samples for faster eval
+
+    new_alias = task_alias + ":modalities"
+    MODALITIES_RC_CONFIGS[new_alias] = new_config
+
+TASK_CONFIGS.update(MODALITIES_RC_CONFIGS)
+
+

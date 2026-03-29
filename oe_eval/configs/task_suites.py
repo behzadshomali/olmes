@@ -941,11 +941,52 @@ TASK_SUITE_CONFIGS["olmo3:base_easy:math_bpb"] = {
     "primary_metric": "macro",
 }
 
+# TASK_SUITE_CONFIGS["modalities:base_easy:math_bpb"] = {
+#     "tasks": [
+#         "gsm_symbolic:bpb::modalities",
+#         "gsm8k:8shot:bpb::modalities",
+#         "minerva_math_algebra:bpb::olmes",
+#         "minerva_math_counting_and_probability:bpb::olmes",
+#         "minerva_math_geometry:bpb::olmes",
+#         "minerva_math_intermediate_algebra:bpb::olmes",
+#         "minerva_math_number_theory:bpb::olmes",
+#         "minerva_math_prealgebra:bpb::olmes",
+#         "minerva_math_precalculus:bpb::olmes",
+#     ],
+#     "primary_metric": "macro",
+# }
+
+TASK_SUITE_CONFIGS["modalities:base_easy:math_ac"] = {
+    "tasks": [
+        "gsm_symbolic::modalities",
+        "gsm8k:8shot:em::modalities"
+    ],
+    "primary_metric": "macro",
+}
+
+TASK_SUITE_CONFIGS["modalities::math_ac"] = {
+    "tasks": [
+        "gsm8k::olmes",
+        # "gsm_symbolic::modalitites"
+    ],
+    "primary_metric": "macro",
+}
+
 TASK_SUITE_CONFIGS["olmo3:base_easy:code_bpb"] = {
     "tasks": [
         "codex_humaneval:3shot:bpb::none",
         "mbpp:3shot:bpb::none",
         "mt_mbpp_v2fix",
+    ],
+    "primary_metric": "macro",
+}
+
+TASK_SUITE_CONFIGS["modalities:base_easy:code_bpb"] = {
+    "tasks": [
+        "codex_humaneval:3shot:bpb::modalities",
+        "mbpp:3shot:bpb::modalities",
+        # "mt_mbpp_v2fix:python:modalities",
+        # "mt_mbpp_v2fix:cpp:modalities",
     ],
     "primary_metric": "macro",
 }
@@ -1000,6 +1041,28 @@ TASK_SUITE_CONFIGS["olmo3:base_easy:qa_bpb"] = {
         "medmcqa:rc:bpb::none",
         "medqa_en:rc:bpb::none",
         "sciriff_yesno:rc:bpb::olmes",
+    },
+    "primary_metric": "macro",
+}
+# TASK_SUITE_CONFIGS["basic_skills:rc::olmes:modalities"] = {
+#     "tasks": [f"basic_skills_{task_type}:rc::olmes:modalities" for task_type in BASIC_SKILLS_TASKS],
+#     "primary_metric": "macro",
+# }
+
+# TASK_SUITE_CONFIGS["modalities:base_easy:qa_rc"] = {
+#     "tasks": {
+#         "arc:rc::olmes:full:modalities",
+#         "hellaswag:rc::olmes:full:modalities",
+#         "winogrande:rc::olmes:full:modalities",
+#     },
+#     "primary_metric": "macro",
+# }
+
+TASK_SUITE_CONFIGS["modalities:base_easy:qa_bpb"] = {
+    "tasks": {
+        "arc:rc:bpb::olmes:full:modalities",
+        "hellaswag:rc:bpb::olmes:full:modalities",
+        "winogrande:rc:bpb::olmes:full:modalities",
     },
     "primary_metric": "macro",
 }
@@ -1108,4 +1171,68 @@ TASK_SUITE_CONFIGS["olmo3:adapt"] = {
         "alpaca_eval_v3::olmo3:adapt",
         "ifeval::olmo3:adapt",
     ]
+}
+
+# Modalities Suites with max_gen_toks
+TASK_SUITE_CONFIGS["arc:rc:bpb::olmes:full:modalities"] = {
+    "tasks": ["arc_easy:rc:bpb::olmes:full:modalities", "arc_challenge:rc:bpb::olmes:full:modalities"]
+}
+
+TASK_SUITE_CONFIGS["arc:rc::olmes:full:modalities"] = {
+    "tasks": ["arc_easy:rc::olmes:full:modalities", "arc_challenge:rc::olmes:full:modalities"]
+}
+
+TASK_SUITE_CONFIGS["mmlu:rc:bpb::olmes:modalities"] = {
+    "tasks": [f"mmlu_{sub}:rc:bpb::olmes:modalities" for sub in MMLU_SUBJECTS],
+    "primary_metric": "macro",
+}
+
+TASK_SUITE_CONFIGS["mmlu:rc::olmes:modalities"] = {
+    "tasks": [f"mmlu_{sub}:rc::olmes:modalities" for sub in MMLU_SUBJECTS],
+    "primary_metric": "macro",
+}
+
+# TASK_SUITE_CONFIGS["basic_skills:rc:bpb::olmes:modalities"] = {
+#     "tasks": [f"basic_skills_{task_type}:rc:bpb::olmes:modalities" for task_type in BASIC_SKILLS_TASKS],
+#     "primary_metric": "macro",
+# }
+
+TASK_SUITE_CONFIGS["modalities:base_easy:math_bpb"] = {
+    "tasks": [
+        "gsm_symbolic:bpb::modalities",
+        "minerva_math_algebra:bpb::olmes",
+        "minerva_math_counting_and_probability:bpb::olmes",
+        "minerva_math_geometry:bpb::olmes",
+        "minerva_math_intermediate_algebra:bpb::olmes",
+        "minerva_math_number_theory:bpb::olmes",
+        "minerva_math_prealgebra:bpb::olmes",
+        "minerva_math_precalculus:bpb::olmes",
+    ],
+    "primary_metric": "macro",
+}
+ 
+TASK_SUITE_CONFIGS["modalities:base_easy:qa_rc"] = {
+    "tasks": {
+        "arc:rc::olmes:full",
+        "hellaswag:rc::olmes:full",
+        "winogrande:rc::olmes:full",
+        "socialiqa:rc::olmes:full",
+        "piqa:rc::olmes:full",
+        "qasper_yesno:rc::olmes",
+        "lambada",
+    },
+    "primary_metric": "macro",
+}
+ 
+TASK_SUITE_CONFIGS["modalities:base_easy:qa_bpb"] = {
+    "tasks": {
+        "arc:rc:bpb::olmes:full",
+        "hellaswag:rc:bpb::olmes:full",
+        "winogrande:rc:bpb::olmes:full",
+        "socialiqa:rc:bpb::olmes:full",
+        "piqa:rc:bpb::olmes:full",
+        "qasper_yesno:rc:bpb::olmes",
+        "lambada:bpb",
+    },
+    "primary_metric": "macro",
 }
